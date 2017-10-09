@@ -5,10 +5,9 @@
  * Sadly we can't use an autoloader here incase the end-user
  * is using one. Multiple autoloaders can cause conflicts
  *
- * Likel/Session/Handler can be called with the friendly name
- * LikelSession, for example:
+ * Likel/Session/Handler can be called like this:
  *
- *      $session = new LikelSession();
+ *      $session = new Likel\Session\Handler();
  *
  * @package     php-simple-sessions
  * @author      Liam Kelly <https://github.com/likel>
@@ -17,10 +16,7 @@
  * @link        https://github.com/likel/php-simple-sessions
  * @version     1.0.0
  */
-namespace Likel\Session;
 
 // Require the models
 require_once(__DIR__ . '/models/Handler.php');
 require_once(__DIR__ . '/models/DB.php');
-
-use Likel\Session\Handler as LikelSession;

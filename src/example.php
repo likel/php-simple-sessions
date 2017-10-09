@@ -10,6 +10,13 @@
  * @version     1.0.0
  */
 
-require_once('autoload.php');
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
-$db = new LikelSession();
+include('autoload.php');
+
+use Likel\Session\Handler as LikelSession;
+
+$session = new LikelSession();
+$session->getSession();

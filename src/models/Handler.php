@@ -13,32 +13,30 @@ namespace Likel\Session;
 
 class Handler
 {
-    // Helper variables used in the object
-    private $DB;
+    // Store the database variable
+    private $db;
 
     /**
-     * Construct the FizzBuzz object
-     * Sets up the range, defaults to 1-100 if no range set
+     * Construct the session Handler object
      *
-     * @param int $range_min The minimum range for the sequence
-     * @param int $range_max The maximum range for the sequence
      * @return void
      */
     function __construct()
     {
-        $this->DB = new Likel\Session\DB();
+        $this->db = new DB();
     }
 
     /**
-     * Sets the range for the FizzBuzz test
-     * Expects is_numeric params
      *
-     * @param int $range_min The minimum range for the sequence
-     * @param int $range_max The maximum range for the sequence
-     * @return void
+     *
+     * @return 
      */
-    public function setRange($range_min, $range_max)
+    public function getSession()
     {
+        $this->db->query("
+            SELECT * FROM {$this->db->getTableName("sessions")}
+        ");
 
+        return $this->db->execute();
     }
 }
