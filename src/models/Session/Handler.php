@@ -27,9 +27,7 @@ class Handler implements \ArrayAccess
      * Construct the session Handler object
      * Set the secret_hash and start the session
      *
-     * @param string $session_name Custom session name
-     * @param bool $secure Whether the site is HTTPS or not
-     * @param string $credentials_location The location of the credential file
+     * @param array $parameters An assoc. array that holds the session parameters
      * @return void
      */
     function __construct($parameters = array())
