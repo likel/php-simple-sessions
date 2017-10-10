@@ -12,10 +12,17 @@ This package is designed to store PHP sessions in a MySQL database so that you c
 
 ### Installing on your server
 
-Step 1
+Create a session table in your MySQL database by running [install/setup.sql](install/setup.sql)
 
 ```
-Example
+CREATE TABLE `likel_sessions` (
+    `id` char(128) NOT NULL DEFAULT '',
+    `set_time` char(10) NOT NULL,
+    `data` text NOT NULL,
+    `session_key` char(128) NOT NULL,
+    `iv` varchar(16) NOT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 ```
 
 Step 2
