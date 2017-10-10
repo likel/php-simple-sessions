@@ -1,6 +1,6 @@
 <?php
 /**
- * The database object which helps abstract database functions
+ * The database object which helps to abstract database functions
  *
  * Uses and requires PDO, generally available after PHP 5.1
  *
@@ -11,13 +11,13 @@
  * @link        https://github.com/likel/php-simple-sessions
  * @version     1.0.0
  */
-namespace Likel\Session;
+namespace Likel;
 
 class DB
 {
-    private $dbh;
-    private $stmt;
-    private $table_prefix;
+    private $database_handler; // Stores the database connection
+    private $statement; // The MySQL query with prepared values
+    private $table_prefix; // The table prefix from the credentials.ini file
 
     /**
      * Construct the database object
@@ -25,18 +25,27 @@ class DB
      * @param string $credentials_location The location of the credential file
      * @return void
      */
-    public function __construct($credentials_location = __DIR__ . '/../ini/credentials.ini')
+    public function __construct($credentials_location)
     {
         try {
             $db_credentials = parse_ini_file($credentials_location, true);
-            $this->dbh = $this->loadDatabase($db_credentials["likel_db"]);
+            $this->database_handler = $this->loadDatabase($db_credentials["likel_db"]);
             $this->table_prefix = $db_credentials["likel_db"]["table_prefix"];
         } catch (\Exception $ex) {
             throw $ex;
         }
     }
 
-    private function loadDatabase($credentials) {
+    /**
+     * Attempt to retrieve the likel_db ini array and connect to the database
+     *
+     * @param array $credentials likel_db from the credentials.ini file
+     * @return mixed
+     * @throws \Exception If credentials empty or not found
+     * @throws \PDOException If PDO connection is unsuccessful
+     */
+    private function loadDatabase($credentials)
+    {
         if(!empty($credentials)){
             try {
                 $dsn = 'mysql:host=' . $credentials['host'] . ';dbname=' . $credentials['db_name'];
@@ -51,7 +60,7 @@ class DB
                 return $pdo_object;
 
             } catch(\PDOException $e) {
-                throw new \Exception($e);
+                throw new \Exception($e->getMessage());
             }
 
         } else {
@@ -61,15 +70,23 @@ class DB
 
     /**
      * Prepare the query from a supplied query string
+     *
+     * @param string $query The prepared query
+     * @return void
      */
     public function query($query)
     {
-        $this->stmt = $this->dbh->prepare($query);
+        $this->statement = $this->database_handler->prepare($query);
     }
 
     /**
      * Bind properties to the statement
      * E.G. $DB->bind(':fname', 'Liam');
+     *
+     * @param string $param The parameter to replace
+     * @param mixed $value The value replacement
+     * @param mixed $type Force the PDO::PARAM type
+     * @return void
      */
     public function bind($param, $value, $type = null)
     {
@@ -89,46 +106,56 @@ class DB
             }
         }
 
-        $this->stmt->bindValue($param, $value, $type);
+        $this->statement->bindValue($param, $value, $type);
     }
 
     /**
      * Execute the statement
      * Use result()/results() for insert queries
+     *
+     * @return bool
      */
     public function execute()
     {
-        return $this->stmt->execute();
+        return $this->statement->execute();
     }
 
     /**
      * Return multiple rows
+     *
+     * @return array
      */
     public function results()
     {
         $this->execute();
-        return $this->stmt->fetchAll(\PDO::FETCH_ASSOC);
+        return $this->statement->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     /**
      * Return a single row
+     *
+     * @return array
      */
     public function result()
     {
         $this->execute();
-        return $this->stmt->fetch(\PDO::FETCH_ASSOC);
+        return $this->statement->fetch(\PDO::FETCH_ASSOC);
     }
 
     /**
      * Return the row count
+     *
+     * @return int
      */
     public function rowCount()
     {
-        return $this->stmt->rowCount();
+        return $this->statement->rowCount();
     }
 
     /**
      * Return if rows exists
+     *
+     * @return bool
      */
     public function rowsExist()
     {
@@ -137,38 +164,49 @@ class DB
 
     /**
      * Return the id of the last inserted row
+     *
+     * @return mixed
      */
     public function lastInsertId()
     {
-        return $this->dbh->lastInsertId();
+        return $this->database_handler->lastInsertId();
     }
 
     /**
      * Begin a transaction for multiple statements
+     *
+     * @return bool
      */
     public function beginTransaction()
     {
-        return $this->dbh->beginTransaction();
+        return $this->database_handler->beginTransaction();
     }
 
     /**
      * Commit the transaction for multiple statements
+     *
+     * @return bool
      */
     public function endTransaction()
     {
-        return $this->dbh->commit();
+        return $this->database_handler->commit();
     }
 
     /**
      * Roll back the transaction
+     *
+     * @return bool
      */
     public function cancelTransaction()
     {
-        return $this->dbh->rollBack();
+        return $this->database_handler->rollBack();
     }
 
     /**
      * Return the table name with prefix
+     *
+     * @param string $table_name The table name that's accessed
+     * @return string
      */
     public function getTableName($table_name)
     {
@@ -177,9 +215,11 @@ class DB
 
     /**
      * Dump the statement's current parameters
+     *
+     * @return void
      */
     public function dumpStatement()
     {
-        return $this->stmt->debugDumpParams();
+        $this->statement->debugDumpParams();
     }
 }

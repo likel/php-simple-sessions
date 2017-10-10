@@ -2,7 +2,7 @@
 /**
  * Load the models
  *
- * Sadly we can't use an autoloader here incase the end-user
+ * Sadly we can't use an autoloader here in the case that the end-user
  * is using one. Multiple autoloaders can cause conflicts
  *
  * Likel/Session/Handler can be called like this:
@@ -18,5 +18,5 @@
  */
 
 // Require the models
-require_once(__DIR__ . '/models/Handler.php');
 require_once(__DIR__ . '/models/DB.php');
+require_once(__DIR__ . '/models/Session/Handler.php');
