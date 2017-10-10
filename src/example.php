@@ -47,4 +47,4 @@ echo "The preferences are: " . print_r($session["preferences"], true) . PHP_EOL;
 echo "The \$_SESSION variable still: " . $_SESSION["test"] . PHP_EOL . PHP_EOL;
 var_dump($session);
 
-// You should no check the database table to see if a row has been added
+// You should now check the database table to see if a row has been added
