@@ -9,7 +9,7 @@
  * @copyright   2017 Liam Kelly
  * @license     MIT License <https://github.com/likel/php-simple-sessions/blob/master/LICENSE>
  * @link        https://github.com/likel/php-simple-sessions
- * @version     1.0.0
+ * @version     1.0.1
  */
 namespace Likel;
 

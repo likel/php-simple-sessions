@@ -31,14 +31,15 @@ Step 2
 Example
 ```
 
-Run example.php
+Run [src/example.php](src/example.php) and check your database
 
 ## Running the tests
 
-Run [file] with PHPUnit
+Run [test/SessionHandlerTest.php](test/SessionHandlerTest.php) and [test/SessionDBTest.php](test/SessionDBTest.php) with PHPUnit
 
 ```
-$ phpunit Test.php
+$ phpunit test/SessionHandlerTest.php
+$ phpunit test/SessionDBTest.php
 ```
 
 ## Author
