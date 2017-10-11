@@ -7,7 +7,7 @@
  * @package     php-simple-sessions
  * @author      Liam Kelly <https://github.com/likel>
  * @copyright   2017 Liam Kelly
- * @license     MIT License <https://github.com/likel/fizz-buzz/blob/master/LICENSE>
+ * @license     MIT License <https://github.com/likel/php-simple-sessions/blob/master/LICENSE>
  * @link        https://github.com/likel/php-simple-sessions
  * @version     1.0.0
  */
@@ -28,11 +28,9 @@ class DB
     public function __construct($credentials_location)
     {
         try {
-            $db_credentials = parse_ini_file($credentials_location, true);
-            $this->database_handler = $this->loadDatabase($db_credentials["likel_db"]);
-            $this->table_prefix = $db_credentials["likel_db"]["table_prefix"];
+            $this->database_handler = $this->loadDatabase($credentials_location);
         } catch (\Exception $ex) {
-            throw $ex;
+            echo $ex->getMessage();
         }
     }
 
@@ -44,27 +42,35 @@ class DB
      * @throws \Exception If credentials empty or not found
      * @throws \PDOException If PDO connection is unsuccessful
      */
-    private function loadDatabase($credentials)
+    private function loadDatabase($credentials_location)
     {
-        if(!empty($credentials)){
-            try {
-                $dsn = 'mysql:host=' . $credentials['host'] . ';dbname=' . $credentials['db_name'];
+        if(file_exists($credentials_location)) {
+            $db_credentials = parse_ini_file($credentials_location, true);
+            $credentials = $db_credentials["likel_db"];
 
-                $options = array(
-                    \PDO::ATTR_PERSISTENT    => true,
-                    \PDO::ATTR_ERRMODE       => \PDO::ERRMODE_EXCEPTION
-                );
+            if(!empty($credentials)){
+                try {
+                    $dsn = 'mysql:host=' . $credentials['host'] . ';dbname=' . $credentials['db_name'];
 
-                $pdo_object = new \PDO($dsn, $credentials['username'], $credentials['password'], $options);
+                    $options = array(
+                        \PDO::ATTR_PERSISTENT    => true,
+                        \PDO::ATTR_ERRMODE       => \PDO::ERRMODE_EXCEPTION
+                    );
 
-                return $pdo_object;
+                    $pdo_object = new \PDO($dsn, $credentials['username'], $credentials['password'], $options);
 
-            } catch(\PDOException $e) {
-                throw new \Exception($e->getMessage());
+                    $this->table_prefix = $db_credentials["likel_db"]["table_prefix"];
+
+                    return $pdo_object;
+
+                } catch(\PDOException $e) {
+                    throw new \Exception($e->getMessage());
+                }
+            } else {
+                throw new \Exception('The likel_db parameter in the credentials file cannot be found.');
             }
-
         } else {
-            throw new \Exception('The credential file could not be located or is empty.');
+            throw new \Exception('The credential file could not be located.');
         }
     }
 
@@ -221,5 +227,10 @@ class DB
     public function dumpStatement()
     {
         $this->statement->debugDumpParams();
+    }
+
+    public function databaseInitialised()
+    {
+        return !empty($this->database_handler);
     }
 }

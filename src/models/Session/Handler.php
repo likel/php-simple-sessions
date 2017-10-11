@@ -11,7 +11,7 @@
  * @package     php-simple-sessions
  * @author      Liam Kelly <https://github.com/likel>
  * @copyright   2017 Liam Kelly
- * @license     MIT License <https://github.com/likel/fizz-buzz/blob/master/LICENSE>
+ * @license     MIT License <https://github.com/likel/php-simple-sessions/blob/master/LICENSE>
  * @link        https://github.com/likel/php-simple-sessions
  * @version     1.0.0
  */
@@ -32,24 +32,30 @@ class Handler implements \ArrayAccess
      */
     function __construct($parameters = array())
     {
+        if(!is_array($parameters)) {
+            $parameters = array();
+        }
+
         // Defaults
         $parameters["session_name"] = empty($parameters["session_name"]) ? "likel_session" : $parameters["session_name"];
-        $parameters["secure"] = empty($parameters["secure"]) ? false : $parameters["secure"];
+        $parameters["secure"] = empty($parameters["secure"]) ? false : is_bool($parameters["secure"] === true) ? true : false;
         $parameters["credentials_location"] = empty($parameters["credentials_location"]) ? __DIR__ . '/../../ini/credentials.ini' : $parameters["credentials_location"];
 
         // Setup the database class variable
         $this->db = new \Likel\DB($parameters["credentials_location"]);
 
-        // Attempt to get the secret_hash from the credentials file
-        try {
-            $session_credentials = parse_ini_file($parameters["credentials_location"], true);
-            $this->secret_hash = $this->loadSecretHash($session_credentials["likel_session"]);
-        } catch (\Exception $ex) {
-            throw $ex;
-        }
+        if($this->db->databaseInitialised()) {
+            // Attempt to get the secret_hash from the credentials file
+            try {
+                $session_credentials = parse_ini_file($parameters["credentials_location"], true);
+                $this->secret_hash = $this->loadSecretHash($session_credentials["likel_session"]);
 
-        // Start session
-        $this->start_session($parameters["session_name"], $parameters["secure"]);
+                // Start session
+                $this->start_session($parameters["session_name"], $parameters["secure"]);
+            } catch (\Exception $ex) {
+                echo $ex->getMessage();
+            }
+        }
     }
 
     /**
