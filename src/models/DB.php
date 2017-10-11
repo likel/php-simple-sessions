@@ -62,7 +62,6 @@ class DB
                     $this->table_prefix = $db_credentials["likel_db"]["table_prefix"];
 
                     return $pdo_object;
-
                 } catch(\PDOException $e) {
                     throw new \Exception($e->getMessage());
                 }

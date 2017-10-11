@@ -47,14 +47,40 @@ class Handler implements \ArrayAccess
         if($this->db->databaseInitialised()) {
             // Attempt to get the secret_hash from the credentials file
             try {
-                $session_credentials = parse_ini_file($parameters["credentials_location"], true);
-                $this->secret_hash = $this->loadSecretHash($session_credentials["likel_session"]);
+                $this->secret_hash = $this->loadSecretHash($parameters["credentials_location"]);
 
                 // Start session
                 $this->start_session($parameters["session_name"], $parameters["secure"]);
             } catch (\Exception $ex) {
                 echo $ex->getMessage();
             }
+        }
+    }
+
+    /**
+     * Attempt to retrieve the secret_hash from the credentials file
+     *
+     * @param array $credentials likel_session from the credentials.ini file
+     * @return string
+     * @throws \Exception If credentials empty or not found
+     */
+    private function loadSecretHash($credentials_location)
+    {
+        if(file_exists($credentials_location)) {
+            $session_credentials = parse_ini_file($credentials_location, true);
+            $credentials = $session_credentials["likel_session"];
+
+            if(!empty($credentials)){
+                if(!empty($credentials["secret_hash"])) {
+                    return $credentials["secret_hash"];
+                } else {
+                    throw new \Exception('The session_hash variable is empty.');
+                }
+            } else {
+                throw new \Exception('The likel_session parameter in the credentials file cannot be found.');
+            }
+        } else {
+            throw new \Exception('The credential file could not be located.');
         }
     }
 
@@ -244,27 +270,6 @@ class Handler implements \ArrayAccess
         } else {
             // Starting a new session, create new iv and key
             return array("iv" => bin2hex(openssl_random_pseudo_bytes(8)), "key" => hash($this->session_hash_algorithm, uniqid(mt_rand(1, mt_getrandmax()), true)));
-        }
-    }
-
-    /**
-     * Attempt to retrieve the secret_hash from the credentials file
-     *
-     * @param array $credentials likel_session from the credentials.ini file
-     * @return string
-     * @throws \Exception If credentials empty or not found
-     */
-    private function loadSecretHash($credentials)
-    {
-        if(!empty($credentials)){
-            if(!empty($credentials["secret_hash"])) {
-                return $credentials["secret_hash"];
-            } else {
-                throw new \Exception('The session_hash variable is empty.');
-            }
-
-        } else {
-            throw new \Exception('The credential file could not be located or is empty.');
         }
     }
 
