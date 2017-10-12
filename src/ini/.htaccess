@@ -1,0 +1,15 @@
+# It is highly suggested to move credentials.ini to a directory not
+# accessible by the public, such as /var/www/html on linux
+#
+# If you need to keep the credentials.ini accessible, ensure that you
+# give the file '600' permissions '$ chmod 600 credentials.ini' and
+# that you have this .htaccess file to deny access or redirect if accessed
+#
+# @package     php-simple-sessions
+# @author      Liam Kelly <https://github.com/likel>
+# @copyright   2017 Liam Kelly
+# @license     MIT License <https://github.com/likel/php-simple-sessions/blob/master/LICENSE>
+# @link        https://github.com/likel/php-simple-sessions
+# @version     1.0.0
+
+deny from all

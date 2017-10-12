@@ -1,10 +1,8 @@
 <?php
 /**
- * Load the models
+ * PSR-4 autoload
  *
- * Sadly we can't use an autoloader here in the case that the end-user
- * is using one. Multiple autoloaders can cause conflicts
- *
+ * After registering this autoload function with require_once()
  * Likel/Session/Handler can be called like this:
  *
  *      $session = new Likel\Session\Handler();
@@ -17,6 +15,25 @@
  * @version     1.0.0
  */
 
-// Require the models
-require_once(__DIR__ . '/models/DB.php');
-require_once(__DIR__ . '/models/Session/Handler.php');
+// Require the models when called
+spl_autoload_register(function ($class_name) {
+    // Change these depending on the project
+    $project_prefix = 'Likel\\';
+    $models_dir = __DIR__ . '/models/';
+
+    // Helper variables used in the autoloader
+    $project_prefix_length = strlen($project_prefix);
+    $relative_class = substr($class_name, $project_prefix_length);
+
+    // Return if the requested class does not include the prefix
+    if (strncmp($project_prefix, $class_name, $project_prefix_length) !== 0) {
+        return;
+    }
+
+    // Replace the namespace prefix with the base directory, replace namespace
+    // separators with directory separators in the class name and append with .php
+    $file = $models_dir . str_replace('\\', '/', $relative_class) . '.php';
+    if (file_exists($file)) {
+        require_once($file);
+    }
+});

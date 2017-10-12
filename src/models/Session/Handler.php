@@ -13,7 +13,7 @@
  * @copyright   2017 Liam Kelly
  * @license     MIT License <https://github.com/likel/php-simple-sessions/blob/master/LICENSE>
  * @link        https://github.com/likel/php-simple-sessions
- * @version     1.0.0
+ * @version     1.0.1
  */
 namespace Likel\Session;
 
@@ -32,24 +32,56 @@ class Handler implements \ArrayAccess
      */
     function __construct($parameters = array())
     {
+        if(!is_array($parameters)) {
+            $parameters = array();
+        }
+
         // Defaults
         $parameters["session_name"] = empty($parameters["session_name"]) ? "likel_session" : $parameters["session_name"];
-        $parameters["secure"] = empty($parameters["secure"]) ? false : $parameters["secure"];
+        $parameters["secure"] = empty($parameters["secure"]) ? false : is_bool($parameters["secure"] === true) ? true : false;
         $parameters["credentials_location"] = empty($parameters["credentials_location"]) ? __DIR__ . '/../../ini/credentials.ini' : $parameters["credentials_location"];
 
         // Setup the database class variable
         $this->db = new \Likel\DB($parameters["credentials_location"]);
 
-        // Attempt to get the secret_hash from the credentials file
-        try {
-            $session_credentials = parse_ini_file($parameters["credentials_location"], true);
-            $this->secret_hash = $this->loadSecretHash($session_credentials["likel_session"]);
-        } catch (\Exception $ex) {
-            throw $ex;
-        }
+        if($this->db->databaseInitialised()) {
+            // Attempt to get the secret_hash from the credentials file
+            try {
+                $this->secret_hash = $this->loadSecretHash($parameters["credentials_location"]);
 
-        // Start session
-        $this->start_session($parameters["session_name"], $parameters["secure"]);
+                // Start session
+                $this->start_session($parameters["session_name"], $parameters["secure"]);
+            } catch (\Exception $ex) {
+                echo $ex->getMessage();
+            }
+        }
+    }
+
+    /**
+     * Attempt to retrieve the secret_hash from the credentials file
+     *
+     * @param array $credentials likel_session from the credentials.ini file
+     * @return string
+     * @throws \Exception If credentials empty or not found
+     */
+    private function loadSecretHash($credentials_location)
+    {
+        if(file_exists($credentials_location)) {
+            $session_credentials = parse_ini_file($credentials_location, true);
+            $credentials = $session_credentials["likel_session"];
+
+            if(!empty($credentials)){
+                if(!empty($credentials["secret_hash"])) {
+                    return $credentials["secret_hash"];
+                } else {
+                    throw new \Exception('The session_hash variable is empty.');
+                }
+            } else {
+                throw new \Exception('The likel_session parameter in the credentials file cannot be found.');
+            }
+        } else {
+            throw new \Exception('The credential file could not be located.');
+        }
     }
 
     /**
@@ -242,27 +274,6 @@ class Handler implements \ArrayAccess
     }
 
     /**
-     * Attempt to retrieve the secret_hash from the credentials file
-     *
-     * @param array $credentials likel_session from the credentials.ini file
-     * @return string
-     * @throws \Exception If credentials empty or not found
-     */
-    private function loadSecretHash($credentials)
-    {
-        if(!empty($credentials)){
-            if(!empty($credentials["secret_hash"])) {
-                return $credentials["secret_hash"];
-            } else {
-                throw new \Exception('The session_hash variable is empty.');
-            }
-
-        } else {
-            throw new \Exception('The credential file could not be located or is empty.');
-        }
-    }
-
-    /**
      * Setup and start the session
      *
      * @param string $session_name What to set the session name as
@@ -293,6 +304,9 @@ class Handler implements \ArrayAccess
         session_set_cookie_params(3600, "/", $cookie_params["domain"], $secure, true);
         session_name($session_name);
         session_start();
+
+        // Put it into the DB so we don't delay
+        $this->_write(session_id(), '');
 
         // Regenerate ID is recommended to reset the session every reload
         // Bug occurs if set to true that causes the current session to
