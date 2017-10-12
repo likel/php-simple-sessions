@@ -25,20 +25,36 @@ CREATE TABLE `likel_sessions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 ```
 
-Step 2
+Move the files under /src into a directory on your server such as "session"
 
 ```
-Example
+e.g. session/ini, session/models, session/autoload.php, session/example.php
 ```
 
-Run [src/example.php](src/example.php) and check your database
+Move the [ini/credentials.ini](ini/credentials.ini) file to a location not accessible by the public
+
+```
+e.g. $ mv ini/credentials /var/www/html/
+```
+
+Update the database information in the credentials.ini file
+
+Ensure that when you create a new session you specify the new credentials.ini location
+
+```
+$session = new Likel\Session\Handler(array(
+    'credentials_location' => "/path/to/new/credentials.ini"
+));
+```
+
+Run [src/example.php](src/example.php) and check your database for the newly created session
 
 ## Running the tests
 
-Run [test/SessionHandlerTest.php](test/SessionHandlerTest.php) and [test/SessionDBTest.php](test/SessionDBTest.php) with PHPUnit
+Run [test/SessionHandlerTest.php](test/SessionHandlerTest.php) with PHPUnit
 
 ```
-$ phpunit test
+$ phpunit SessionHandlerTest.php
 ```
 
 ## Author
