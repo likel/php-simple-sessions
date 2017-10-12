@@ -12,7 +12,7 @@ This package is designed to store PHP sessions in a MySQL database so that you c
 
 ### Installing on your server
 
-Create a session table in your MySQL database by running [install/setup.sql](install/setup.sql)
+1. Create a session table in your MySQL database by running [install/setup.sql](install/setup.sql)
 
 ```
 CREATE TABLE `likel_sessions` (
@@ -25,21 +25,21 @@ CREATE TABLE `likel_sessions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 ```
 
-Move the files under /src into a directory on your server such as "session"
+2. Move the files under /src into a directory on your server such as "session"
 
 ```
 e.g. session/ini, session/models, session/autoload.php, session/example.php
 ```
 
-Move the [ini/credentials.ini](ini/credentials.ini) file to a location not accessible by the public
+3. Move the [ini/credentials.ini](ini/credentials.ini) file to a location not accessible by the public
 
 ```
 e.g. $ mv ini/credentials /var/www/html/
 ```
 
-Update the database information in the credentials.ini file
+4. Update the database information in the credentials.ini file
 
-Ensure that when you create a new session you specify the new credentials.ini location
+5. Ensure that when you create a new session you specify the new credentials.ini location
 
 ```
 $session = new Likel\Session\Handler(array(
@@ -47,7 +47,7 @@ $session = new Likel\Session\Handler(array(
 ));
 ```
 
-Run [src/example.php](src/example.php) and check your database for the newly created session
+6. Run [src/example.php](src/example.php) and check your database for the newly created session
 
 ## Running the tests
 
