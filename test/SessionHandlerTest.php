@@ -21,8 +21,6 @@ require_once(__DIR__ . '/../src/autoload.php');
  */
 final class SessionHandlerTest extends TestCase
 {
-    private $session;
-
     /**
      * Destroy the session at the end of each test
      */
@@ -38,7 +36,7 @@ final class SessionHandlerTest extends TestCase
      */
     public function testConstructorNoParameters()
     {
-        $this->session = new \Likel\Session\Handler();
+        $session = new \Likel\Session\Handler();
         $this->assertEquals(session_status(), PHP_SESSION_ACTIVE);
     }
 
@@ -47,7 +45,7 @@ final class SessionHandlerTest extends TestCase
      */
     public function testConstructorNonArray()
     {
-        $this->session = new \Likel\Session\Handler("a");
+        $session = new \Likel\Session\Handler("a");
         $this->assertEquals(session_status(), PHP_SESSION_ACTIVE);
     }
 
@@ -56,7 +54,7 @@ final class SessionHandlerTest extends TestCase
      */
     public function testConstructorSessionNameSet()
     {
-        $this->session = new \Likel\Session\Handler(array(
+        $session = new \Likel\Session\Handler(array(
             'session_name' => "test_session"
         ));
         $this->assertEquals(session_status(), PHP_SESSION_ACTIVE);
@@ -68,7 +66,7 @@ final class SessionHandlerTest extends TestCase
      */
     public function testConstructorSecureSet()
     {
-        $this->session = new \Likel\Session\Handler(array(
+        $session = new \Likel\Session\Handler(array(
             'secure' => "true"
         ));
         $this->assertEquals(session_status(), PHP_SESSION_ACTIVE);
@@ -79,7 +77,7 @@ final class SessionHandlerTest extends TestCase
      */
     public function testConstructorCredentialsLocationSet()
     {
-        $this->session = new \Likel\Session\Handler(array(
+        $session = new \Likel\Session\Handler(array(
             'credentials_location' => __DIR__ . '/../src/ini/credentials.ini'
         ));
         $this->assertEquals(session_status(), PHP_SESSION_ACTIVE);
@@ -90,7 +88,7 @@ final class SessionHandlerTest extends TestCase
      */
     public function testConstructorNonExistantParameter()
     {
-        $this->session = new \Likel\Session\Handler(array(
+        $session = new \Likel\Session\Handler(array(
             'foo' => 'bar'
         ));
         $this->assertEquals(session_status(), PHP_SESSION_ACTIVE);
@@ -101,7 +99,7 @@ final class SessionHandlerTest extends TestCase
      */
     public function testConstructorIncorrectSecureType()
     {
-        $this->session = new \Likel\Session\Handler(array(
+        $session = new \Likel\Session\Handler(array(
             'secure' => "false"
         ));
         $this->assertEquals(session_status(), PHP_SESSION_ACTIVE);
@@ -113,9 +111,53 @@ final class SessionHandlerTest extends TestCase
     public function testConstructorIncorrectCredentialsLocation()
     {
         $this->expectOutputString('The credential file could not be located.');
-        $this->session = new \Likel\Session\Handler(array(
+        $session = new \Likel\Session\Handler(array(
             'credentials_location' => "path"
         ));
         $this->assertEquals(session_status(), PHP_SESSION_NONE);
+    }
+
+    /**
+     * Check session is in the database
+     */
+    public function testSessionInDatabase()
+    {
+        $session = new \Likel\Session\Handler();
+        $db = new \Likel\DB(__DIR__ . '/../src/ini/credentials.ini');
+        $db->query("
+            SELECT * FROM {$db->getTableName("sessions")}
+            WHERE id = :id
+        ");
+        $db->bind(":id", session_id());
+        $this->assertNotNull($db->result());
+    }
+
+    /**
+     * Test ArrayAccess implementation
+     */
+    public function testArrayAccessImplementation()
+    {
+        $session = new \Likel\Session\Handler();
+
+        // offsetSet test
+        $session["set"] = "foo";
+        $this->assertEquals($session["set"], "foo");
+
+        // offsetGet tests
+        $bar = $session["set"];
+        $this->assertEquals($session["set"], $bar);
+        $this->assertNull($session["not_set"]);
+
+        // offsetExists tests
+        $this->assertTrue(isset($session["set"]));
+        $this->assertFalse(isset($session["not_set"]));
+
+        // offsetUnset test
+        unset($session["set"]);
+        $this->assertNull($session["set"]);
+
+        // __debugInfo test
+        $session["set"] = "foo";
+        $this->assertEquals('Likel\Session\HandlerObject([set]=>foo)', preg_replace('/\s+/', '', print_r($session, true)));
     }
 }

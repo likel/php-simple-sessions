@@ -305,6 +305,9 @@ class Handler implements \ArrayAccess
         session_name($session_name);
         session_start();
 
+        // Put it into the DB so we don't delay
+        $this->_write(session_id(), '');
+
         // Regenerate ID is recommended to reset the session every reload
         // Bug occurs if set to true that causes the current session to
         // be removed if loading pages too quickly
