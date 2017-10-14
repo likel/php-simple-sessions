@@ -227,7 +227,12 @@ class DB
     {
         $this->statement->debugDumpParams();
     }
-
+    
+    /**
+     * Return if the database has been initialised
+     *
+     * @return bool
+     */
     public function databaseInitialised()
     {
         return !empty($this->database_handler);
