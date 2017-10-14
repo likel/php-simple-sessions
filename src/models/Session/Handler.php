@@ -58,33 +58,6 @@ class Handler implements \ArrayAccess
     }
 
     /**
-     * Attempt to retrieve the secret_hash from the credentials file
-     *
-     * @param array $credentials likel_session from the credentials.ini file
-     * @return string
-     * @throws \Exception If credentials empty or not found
-     */
-    private function loadSecretHash($credentials_location)
-    {
-        if(file_exists($credentials_location)) {
-            $session_credentials = parse_ini_file($credentials_location, true);
-            $credentials = $session_credentials["likel_session"];
-
-            if(!empty($credentials)){
-                if(!empty($credentials["secret_hash"])) {
-                    return $credentials["secret_hash"];
-                } else {
-                    throw new \Exception('The session_hash variable is empty.');
-                }
-            } else {
-                throw new \Exception('The likel_session parameter in the credentials file cannot be found.');
-            }
-        } else {
-            throw new \Exception('The credential file could not be located.');
-        }
-    }
-
-    /**
      * Open the session if the db connection has been made
      *
      * @return bool
@@ -312,6 +285,33 @@ class Handler implements \ArrayAccess
         // Bug occurs if set to true that causes the current session to
         // be removed if loading pages too quickly
         // session_regenerate_id(true);
+    }
+    
+    /**
+     * Attempt to retrieve the secret_hash from the credentials file
+     *
+     * @param string $credentials_location The credentials.ini file location
+     * @return string
+     * @throws \Exception If credentials empty or not found
+     */
+    private function loadSecretHash($credentials_location)
+    {
+        if(file_exists($credentials_location)) {
+            $session_credentials = parse_ini_file($credentials_location, true);
+            $credentials = $session_credentials["likel_session"];
+
+            if(!empty($credentials)){
+                if(!empty($credentials["secret_hash"])) {
+                    return $credentials["secret_hash"];
+                } else {
+                    throw new \Exception('The session_hash variable is empty.');
+                }
+            } else {
+                throw new \Exception('The likel_session parameter in the credentials file cannot be found.');
+            }
+        } else {
+            throw new \Exception('The credential file could not be located.');
+        }
     }
 
     /**
